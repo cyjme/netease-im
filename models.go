@@ -217,3 +217,57 @@ type RoomInfo struct {
 	CreateTime  int64  `json:"createtime"`  //房间创建时间【int64】
 	Destroytime int64  `json:"destroytime"` //房间结束时间【int64】
 }
+
+//Team
+type Team struct {
+	Tname           string `json:"tname"`                  //是	群名称，最大长度64字符
+	Owner           string `json:"owner"`                  //是	群主用户帐号，最大长度32字符
+	Members         string `json:"members"`                //是	邀请的群成员列表。["aaa","bbb"](JSONArray对应的accid，如果解析出错会报414)，members与owner总和上限为200。members中无需再加owner自己的账号。
+	Announcement    string `json:"announcement"`           //否	群公告，最大长度1024字符
+	Intro           string `json:"intro"`                  //否	群描述，最大长度512字符
+	Msg             string `json:"msg"`                    //是	邀请发送的文字，最大长度150字符
+	Magree          int    `json:"magree,string"`          //是	管理后台建群时，0不需要被邀请人同意加入群，1需要被邀请人同意才可以加入群。其它会返回414
+	Joinmode        int    `json:"joinmode,string"`        //是	群建好后，sdk操作时，0不用验证，1需要验证,2不允许任何人加入。其它返回414
+	Custom          string `json:"custom"`                 //否	自定义高级群扩展属性，第三方可以跟据此属性自定义扩展自己的群属性。（建议为json）,最大长度1024字符
+	Icon            string `json:"icon"`                   //否	群头像，最大长度1024字符
+	Beinvitemode    int    `json:"beinvitemode,string"`    //否	被邀请人同意方式，0-需要同意(默认),1-不需要同意。其它返回414
+	Invitemode      int    `json:"invitemode,string"`      //否	谁可以邀请他人入群，0-管理员(默认),1-所有人。其它返回414
+	Uptinfomode     int    `json:"uptinfomode,string"`     //否	谁可以修改群资料，0-管理员(默认),1-所有人。其它返回414
+	Upcustommode    int    `json:"upcustommode,string"`    //否	谁可以更新群自定义属性，0-管理员(默认),1-所有人。其它返回414
+	TeamMemberLimit int    `json:"teamMemberLimit,string"` //否	该群最大人数(包含群主)，范围：2至应用定义的最大群人数(默认:200)。其它返回414
+	Attach          string `json:"attach"`                 //否，拉入入群/踢人出群 时选填,自定义扩展字段，最大长度512
+	Member          string `json:"member"`                 //否，踢人入群时选填
+}
+
+type TeamMemberInfo struct {
+	Createtime string `json:"createtime"`
+	Updatetime string `json:"updatetime"`
+	Nick       string `json:"nick"`
+	Accid      string `json:"accid"`
+	Mute       bool   `json:"mute"`
+	Custom     string `json:"custom"`
+}
+
+type TeamDetailInfo struct {
+	Icon         string           `json:"icon"`
+	Announcement string           `json:"announcement"`
+	Uptinfomode  int              `json:"uptinfomode"`
+	Maxusers     int              `json:"maxusers"`
+	Intro        string           `json:"intro"`
+	Upcustommode int              `json:"upcustommode"`
+	Tname        string           `json:"tname"`
+	Beinvitemode int              `json:"beinvitemode"`
+	Joinmode     int              `json:"joinmode"`
+	Tid          string           `json:"tid"`
+	Invitemode   int              `json:"invitemode"`
+	Mute         bool             `json:"mute"`
+	Custom       string           `json:"custom"`
+	ClientCustom string           `json:"clientCustom"`
+	Createtime   string           `json:"createtime"`
+	Updatetime   string           `json:"updatetime"`
+	Owner        TeamMemberInfo   `json:"owner"`
+	Admins       []TeamMemberInfo `json:"admins"`
+	Members      []TeamMemberInfo `json:"members"`
+
+	Size int `json:"size"`
+}
