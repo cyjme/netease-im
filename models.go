@@ -240,8 +240,8 @@ type Team struct {
 }
 
 type TeamMemberInfo struct {
-	Createtime string `json:"createtime"`
-	Updatetime string `json:"updatetime"`
+	Createtime int64  `json:"createtime"`
+	Updatetime int64  `json:"updatetime"`
 	Nick       string `json:"nick"`
 	Accid      string `json:"accid"`
 	Mute       bool   `json:"mute"`
@@ -258,13 +258,13 @@ type TeamDetailInfo struct {
 	Tname        string           `json:"tname"`
 	Beinvitemode int              `json:"beinvitemode"`
 	Joinmode     int              `json:"joinmode"`
-	Tid          string           `json:"tid"`
+	Tid          int64              `json:"tid"`
 	Invitemode   int              `json:"invitemode"`
 	Mute         bool             `json:"mute"`
 	Custom       string           `json:"custom"`
 	ClientCustom string           `json:"clientCustom"`
-	Createtime   string           `json:"createtime"`
-	Updatetime   string           `json:"updatetime"`
+	Createtime   int64            `json:"createtime"`
+	Updatetime   int64            `json:"updatetime"`
 	Owner        TeamMemberInfo   `json:"owner"`
 	Admins       []TeamMemberInfo `json:"admins"`
 	Members      []TeamMemberInfo `json:"members"`

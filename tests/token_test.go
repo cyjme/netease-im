@@ -8,8 +8,13 @@ import (
 	netease "github.com/MrSong0607/netease-im"
 )
 
+var (
+	appKey    = "41f5431e11d5dd372fc58fbef33eeae1"
+	appSecret = "e792ded9b0bc"
+)
+var client = netease.CreateImClient(appKey, appSecret, "")
 
-var client = netease.CreateImClient("", "", "")
+//var client = netease.CreateImClient("", "", "")
 
 func init() {
 	os.Setenv("GOCACHE", "off")

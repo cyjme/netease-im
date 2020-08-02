@@ -48,7 +48,7 @@ upcustommode	int	否	谁可以更新群自定义属性，0-管理员(默认),1-�
 teamMemberLimit	int	否	该群最大人数(包含群主)，范围：2至应用定义的最大群人数(默认:200)。其它返回414
 */
 func (c *ImClient) CreateTeam(t *Team) (string, error) {
-	var param map[string]string
+	param := map[string]string{}
 	data, err := json.Marshal(t)
 	if err != nil {
 		return "", err
@@ -104,7 +104,7 @@ msg	String	是	邀请发送的文字，最大长度150字符
 attach	String	否	自定义扩展字段，最大长度512
 */
 func (c *ImClient) AddMemberToTeam(tid string, t *Team) (string, error) {
-	var param map[string]string
+	param := map[string]string{}
 	param["tid"] = tid
 	data, err := json.Marshal(t)
 	if err != nil {
@@ -167,7 +167,7 @@ members	String	否	["aaa","bbb"]（JSONArray对应的accid，如果解析出错�
 attach	String	否	自定义扩展字段，最大长度512
 */
 func (c *ImClient) RemoveMemberFromTeam(tid string, t *Team) (string, error) {
-	var param map[string]string
+	param := map[string]string{}
 	param["tid"] = tid
 	data, err := json.Marshal(t)
 	if err != nil {
@@ -227,7 +227,7 @@ tid  	String	是	网易云通信服务器产生，群唯一标识，创建群时
 owner	String	是	群主用户帐号，最大长度32字符
 */
 func (c *ImClient) DeleteTeam(tid string, owner string) (string, error) {
-	var param map[string]string
+	param := map[string]string{}
 	param["tid"] = tid
 	param["owner"] = owner
 	client := c.client.R()
@@ -277,7 +277,7 @@ upcustommode	int	否	谁可以更新群自定义属性，0-管理员(默认),1-�
 teamMemberLimit	int	否	该群最大人数(包含群主)，范围：2至应用定义的最大群人数(默认:200)。其它返回414
 */
 func (c *ImClient) UpdateTeam(tid string, t *Team) (string, error) {
-	var param map[string]string
+	param := map[string]string{}
 	param["tid"] = tid
 
 	data, err := json.Marshal(t)
@@ -327,7 +327,7 @@ ignoreInvalid	Boolean	否	是否忽略无效的tid，默认为false。设置为t
 */
 func (c *ImClient) QueryTeam(tids string, ope int, ignoreInvalid bool) ([]TeamDetailInfo, error) {
 	teamDetails := []TeamDetailInfo{}
-	var param map[string]string
+	param := map[string]string{}
 	param["tids"] = tids
 	param["ope"] = strconv.Itoa(ope)
 	if ignoreInvalid {
@@ -376,14 +376,14 @@ func (c *ImClient) QueryTeam(tids string, ope int, ignoreInvalid bool) ([]TeamDe
 tid	long	是	群id，群唯一标识，创建群时会返回
 */
 func (c *ImClient) QueryTeamDetail(tid string) (TeamDetailInfo, error) {
-	var param map[string]string
+	param := map[string]string{}
 	var teamDetail TeamDetailInfo
 	param["tid"] = tid
 	client := c.client.R()
 	c.setCommonHead(client)
 	client.SetFormData(param)
 
-	resp, err := client.Post(teamRemovePoint)
+	resp, err := client.Post(teamQueryDetailPoint)
 	if err != nil {
 		return teamDetail, err
 	}
