@@ -3,14 +3,14 @@ package netease
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	jsoniter "github.com/json-iterator/go"
 	"strconv"
-	"strings"
 )
 
 const (
 	teamCreatePoint          = neteaseBaseURL + "/team/create.action"
-	teamAddPoint             = neteaseBaseURL + "/user/add.action"
+	teamAddPoint             = neteaseBaseURL + "/team/add.action"
 	teamKickPoint            = neteaseBaseURL + "/team/kick.action"
 	teamRemovePoint          = neteaseBaseURL + "/team/remove.action"
 	teamUpdatePoint          = neteaseBaseURL + "/team/update.action"
@@ -28,6 +28,24 @@ const (
 	teamMuteTlistAllPoint    = neteaseBaseURL + "/team/muteTlistAll.action"
 	teamListTeamMutePoint    = neteaseBaseURL + "/team/listTeamMute.action"
 )
+
+type CreateTeamReq struct {
+	Tname           string `json:"tname"`
+	Owner           string `json:"owner"`
+	Members         string `json:"members"`
+	Announcement    string `json:"announcement"`
+	Intro           string `json:"intro"`
+	Msg             string `json:"msg"`
+	Magree          int    `json:"magree"`
+	Joinmode        int    `json:"joinmode"`
+	Custom          string `json:"custom"`
+	Icon            string `json:"icon"`
+	Beinvitemode    int    `json:"beinvitemode"`
+	Invitemode      int    `json:"invitemode"`
+	Uptinfomode     int    `json:"uptinfomode"`
+	Upcustommode    int    `json:"upcustommode"`
+	TeamMemberLimit int    `json:"teamMemberLimit"`
+}
 
 // teamCreatePoint 创建Team
 /*
@@ -47,16 +65,24 @@ uptinfomode	int	否	谁可以修改群资料，0-管理员(默认),1-所有人�
 upcustommode	int	否	谁可以更新群自定义属性，0-管理员(默认),1-所有人。其它返回414
 teamMemberLimit	int	否	该群最大人数(包含群主)，范围：2至应用定义的最大群人数(默认:200)。其它返回414
 */
-func (c *ImClient) CreateTeam(t *Team) (string, error) {
+func (c *ImClient) CreateTeam(t *CreateTeamReq) (string, error) {
 	param := map[string]string{}
-	data, err := json.Marshal(t)
-	if err != nil {
-		return "", err
-	}
-	err = json.Unmarshal(data, &param)
-	if err != nil {
-		return "", err
-	}
+	param["tname"] = t.Tname
+	param["tname"] = t.Tname
+	param["owner"] = t.Owner
+	param["members"] = t.Members
+	param["announcement"] = t.Announcement
+	param["intro"] = t.Intro
+	param["msg"] = t.Msg
+	param["magree"] = strconv.Itoa(t.Magree)
+	param["joinmode"] = strconv.Itoa(t.Joinmode)
+	param["custom"] = t.Custom
+	param["icon"] = t.Icon
+	param["beinvitemode"] = strconv.Itoa(t.Beinvitemode)
+	param["invitemode"] = strconv.Itoa(t.Invitemode)
+	param["uptinfomode"] = strconv.Itoa(t.Uptinfomode)
+	param["upcustommode"] = strconv.Itoa(t.Upcustommode)
+	param["teamMemberLimit"] = strconv.Itoa(t.TeamMemberLimit)
 
 	client := c.client.R()
 	c.setCommonHead(client)
@@ -94,6 +120,15 @@ func (c *ImClient) CreateTeam(t *Team) (string, error) {
 	return tid, nil
 }
 
+type AddMemberToTeamReq struct {
+	Tid     string `json:"tid"`
+	Owner   string `json:"owner"`
+	Members string `json:"members"`
+	Magree  int    `json:"magree"`
+	Msg     string `json:"msg"`
+	Attach  string `json:"attach"`
+}
+
 //teamAddPoint 拉人入群
 /*
 tid	String	是	网易云通信服务器产生，群唯一标识，创建群时会返回，最大长度128字符
@@ -103,16 +138,16 @@ magree	int	是	管理后台建群时，0不需要被邀请人同意加入群，1
 msg	String	是	邀请发送的文字，最大长度150字符
 attach	String	否	自定义扩展字段，最大长度512
 */
-func (c *ImClient) AddMemberToTeam(tid string, t *Team) (string, error) {
+func (c *ImClient) AddMemberToTeam(tid string, t *AddMemberToTeamReq) (string, error) {
 	param := map[string]string{}
 	param["tid"] = tid
-	data, err := json.Marshal(t)
-	if err != nil {
-		return "", err
-	}
-	err = json.Unmarshal(data, &param)
-	if err != nil {
-		return "", err
+
+	param["owner"] = t.Owner
+	param["members"] = t.Members
+	param["magree"] = strconv.Itoa(t.Magree)
+	param["msg"] = t.Msg
+	if t.Attach != "" {
+		param["attach"] = t.Attach
 	}
 
 	client := c.client.R()
@@ -124,6 +159,7 @@ func (c *ImClient) AddMemberToTeam(tid string, t *Team) (string, error) {
 		return "", err
 	}
 
+	fmt.Println("resp content", string(resp.Body()))
 	var jsonRes map[string]*json.RawMessage
 	err = jsoniter.Unmarshal(resp.Body(), &jsonRes)
 	if err != nil {
@@ -142,20 +178,29 @@ func (c *ImClient) AddMemberToTeam(tid string, t *Team) (string, error) {
 		return "", errors.New(msg)
 	}
 
-	faccid := struct {
-		Accid []string `json:"accid"`
-		Msg   string   `json:"msg"`
-	}{
-	}
-	err = json.Unmarshal(*jsonRes["faccid"], &faccid)
-	if err != nil {
-		return "", err
-	}
-	if len(faccid.Accid) > 0 {
-		return "", errors.New(faccid.Msg + ":" + strings.Join(faccid.Accid, ","))
-	}
+	//faccid 可能不存在。
+	//faccid := struct {
+	//	Accid []string `json:"accid"`
+	//	Msg   string   `json:"msg"`
+	//}{
+	//}
+	//err = json.Unmarshal(*jsonRes["faccid"], &faccid)
+	//if err != nil {
+	//	return "", err
+	//}
+	//if len(faccid.Accid) > 0 {
+	//	return "", errors.New(faccid.Msg + ":" + strings.Join(faccid.Accid, ","))
+	//}
 
 	return tid, nil
+}
+
+type RemoveMemberFromTeamReq struct {
+	Tid     string `json:"tid"`
+	Owner   string `json:"owner"`
+	Member  string `json:"member"`
+	Members string `json:"members"`
+	Attach  string `json:"attach"`
 }
 
 //teamKickPoint 踢人出群
@@ -166,16 +211,16 @@ member	String	否	被移除人的accid，用户账号，最大长度32字符;注
 members	String	否	["aaa","bbb"]（JSONArray对应的accid，如果解析出错，会报414）一次最多操作200个accid; 注：member或members任意提供一个，优先使用member参数
 attach	String	否	自定义扩展字段，最大长度512
 */
-func (c *ImClient) RemoveMemberFromTeam(tid string, t *Team) (string, error) {
+func (c *ImClient) RemoveMemberFromTeam(tid string, t *RemoveMemberFromTeamReq) (string, error) {
 	param := map[string]string{}
 	param["tid"] = tid
-	data, err := json.Marshal(t)
-	if err != nil {
-		return "", err
-	}
-	err = json.Unmarshal(data, &param)
-	if err != nil {
-		return "", err
+
+	param["tid"] = t.Tid
+	param["owner"] = t.Owner
+	param["member"] = t.Member
+	param["members"] = t.Members
+	if t.Attach != "" {
+		param["attach"] = t.Attach
 	}
 
 	client := c.client.R()
@@ -205,18 +250,18 @@ func (c *ImClient) RemoveMemberFromTeam(tid string, t *Team) (string, error) {
 		return "", errors.New(msg)
 	}
 
-	faccid := struct {
-		Accid []string `json:"accid"`
-		Msg   string   `json:"msg"`
-	}{
-	}
-	err = json.Unmarshal(*jsonRes["faccid"], &faccid)
-	if err != nil {
-		return "", err
-	}
-	if len(faccid.Accid) > 0 {
-		return "", errors.New(faccid.Msg + ":" + strings.Join(faccid.Accid, ","))
-	}
+	//faccid := struct {
+	//	Accid []string `json:"accid"`
+	//	Msg   string   `json:"msg"`
+	//}{
+	//}
+	//err = json.Unmarshal(*jsonRes["faccid"], &faccid)
+	//if err != nil {
+	//	return "", err
+	//}
+	//if len(faccid.Accid) > 0 {
+	//	return "", errors.New(faccid.Msg + ":" + strings.Join(faccid.Accid, ","))
+	//}
 
 	return tid, nil
 }
@@ -260,6 +305,22 @@ func (c *ImClient) DeleteTeam(tid string, owner string) (string, error) {
 	return tid, nil
 }
 
+type UpdateTeamReq struct {
+	Tid             string `json:"tid"`
+	Tname           string `json:"tname"`
+	Owner           string `json:"owner"`
+	Announcement    string `json:"announcement"`
+	Intro           string `json:"intro"`
+	Joinmode        int    `json:"joinmode"`
+	Custom          string `json:"custom"`
+	Icon            string `json:"icon"`
+	Beinvitemode    int    `json:"beinvitemode"`
+	Invitemode      int    `json:"invitemode"`
+	Uptinfomode     int    `json:"uptinfomode"`
+	Upcustommode    int    `json:"upcustommode"`
+	TeamMemberLimit int    `json:"teamMemberLimit"`
+}
+
 //teamUpdateTeamPoint 编辑群资料
 /*
 tid	String	是	网易云通信服务器产生，群唯一标识，创建群时会返回
@@ -276,18 +337,22 @@ uptinfomode	int	否	谁可以修改群资料，0-管理员(默认),1-所有人�
 upcustommode	int	否	谁可以更新群自定义属性，0-管理员(默认),1-所有人。其它返回414
 teamMemberLimit	int	否	该群最大人数(包含群主)，范围：2至应用定义的最大群人数(默认:200)。其它返回414
 */
-func (c *ImClient) UpdateTeam(tid string, t *Team) (string, error) {
+func (c *ImClient) UpdateTeam(tid string, t *UpdateTeamReq) (string, error) {
 	param := map[string]string{}
 	param["tid"] = tid
 
-	data, err := json.Marshal(t)
-	if err != nil {
-		return "", err
-	}
-	err = json.Unmarshal(data, &param)
-	if err != nil {
-		return "", err
-	}
+	param["tname"] = t.Tname
+	param["owner"] = t.Owner
+	param["announcement"] = t.Announcement
+	param["intro"] = t.Intro
+	param["joinmode"] = strconv.Itoa(t.Joinmode)
+	param["custom"] = t.Custom
+	param["icon"] = t.Icon
+	param["beinvitemode"] = strconv.Itoa(t.Beinvitemode)
+	param["invitemode"] = strconv.Itoa(t.Invitemode)
+	param["uptinfomode"] = strconv.Itoa(t.Uptinfomode)
+	param["upcustommode"] = strconv.Itoa(t.Upcustommode)
+	param["teamMemberLimit"] = strconv.Itoa(t.TeamMemberLimit)
 
 	client := c.client.R()
 	c.setCommonHead(client)
@@ -325,8 +390,8 @@ tids	String	是	群id列表，如["3083","3084"]
 ope	int	是	1表示带上群成员列表，0表示不带群成员列表，只返回群信息
 ignoreInvalid	Boolean	否	是否忽略无效的tid，默认为false。设置为true时将忽略无效tid，并在响应结果中返回无效的tid
 */
-func (c *ImClient) QueryTeam(tids string, ope int, ignoreInvalid bool) ([]TeamDetailInfo, error) {
-	teamDetails := []TeamDetailInfo{}
+func (c *ImClient) QueryTeam(tids string, ope int, ignoreInvalid bool) ([]TeamInfoInQueryAction, error) {
+	teamDetails := []TeamInfoInQueryAction{}
 	param := map[string]string{}
 	param["tids"] = tids
 	param["ope"] = strconv.Itoa(ope)
@@ -387,9 +452,10 @@ func (c *ImClient) QueryTeamDetail(tid string) (TeamDetailInfo, error) {
 	if err != nil {
 		return teamDetail, err
 	}
+	fmt.Println(string(resp.Body()), "000000000")
 
 	var jsonRes map[string]*json.RawMessage
-	err = jsoniter.Unmarshal(resp.Body(), &jsonRes)
+	err = json.Unmarshal(resp.Body(), &jsonRes)
 	if err != nil {
 		return teamDetail, err
 	}
@@ -410,6 +476,8 @@ func (c *ImClient) QueryTeamDetail(tid string) (TeamDetailInfo, error) {
 	if err != nil {
 		return teamDetail, err
 	}
+
+	fmt.Println(teamDetail.Owner)
 
 	return teamDetail, nil
 }
