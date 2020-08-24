@@ -64,7 +64,7 @@ func (c *ImClient) UpdateImUser(u *ImUser) error {
 	c.setCommonHead(client)
 	client.SetFormData(param)
 
-	resp, err := client.Post(createImUserPoint)
+	resp, err := client.Post(updateImUserPoint)
 	if err != nil {
 		return err
 	}
